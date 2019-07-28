@@ -1,18 +1,28 @@
 import pickle
 import os
-prefix = 'David'
+import argparse
+import time
 
-with open('doc_id_to_path.csv', 'r') as f:
+from index import word_doc_id_file, TRIE_FILE, ID_2_DOC_PATH_FILE
+
+parser = argparse.ArgumentParser()
+parser.add_argument("prefix")
+args = parser.parse_args()
+prefix = args.prefix
+
+# load id2docpath and trie
+with open(ID_2_DOC_PATH_FILE, 'r') as f:
     lines = f.read().splitlines()
     id_2_doc_path = {l.split(',')[0]: l.split(',')[1] for l in lines}
 
 print (id_2_doc_path)
-trie = pickle.load(open( "trie.p", "rb" ))
+trie = pickle.load(open(TRIE_FILE, "rb"))
 
-index_dir = 'w_docs'
+t = time.time()
+# get doc indexes that prefix shows up in
 indexes = set()
 for key in trie.keys(prefix):
-    with open(os.path.join(index_dir, key), 'r') as f:
+    with open(word_doc_id_file(key), 'r') as f:
         indexes |= set(f.read().splitlines())
 
 print(indexes)
@@ -21,3 +31,5 @@ for p in doc_paths:
     with open(p, 'r') as f:
         print(f.read())
         break
+
+print("Actual processing:", time.time() - t)

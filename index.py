@@ -7,7 +7,12 @@ import pickle
 
 import pygtrie
 
-documents = ["hi my name is eugene", "index this document"]
+TRIE_FILE = 'trie.p'
+ID_2_DOC_PATH_FILE = 'doc_id_to_path.csv'
+WORD_DOC_MAP_FILE = 'w_docs'
+
+def word_doc_id_file(word):
+    return os.path.join(WORD_DOC_MAP_FILE, word)
 
 def tokenize(text, case_sensitive=True):
     tokens = word_tokenize(text)
@@ -32,46 +37,49 @@ def index_documents():
 
     doc_id_to_path = {}
     w_docs = defaultdict(list)
-    for path in pathlist:
+    for i, path in enumerate(pathlist):
         path = str(path)
         if 'DS_Store' in path:
             continue
 
-        doc_id_to_path[c] = path
+        doc_id_to_path[i] = path
         with open(path, 'r', encoding="utf8", errors='ignore') as f:
             doc = f.read()
             w_freq = document_to_freq(doc)
             for w in w_freq:
-                w_docs[w].append(c)
+                w_docs[w].append(i)
 
-        c+=1
-        if c%1000 == 0:
+        if i%1000 == 0:
             print (c, len(w_docs))
 
-        if c > 100:
+        if i > 100000:
             break
 
     return w_docs, doc_id_to_path
 
 
-t = time.time()
-trie = pygtrie.CharTrie()
-w_docs, doc_id_to_path = index_documents()
-print(time.time() - t)
+if __name__ == "__main__":
+    # index documents and build trie
+    t = time.time()
+    trie = pygtrie.CharTrie()
+    w_docs, doc_id_to_path = index_documents()
+    print(time.time() - t)
 
-index_dir = 'w_docs'
-os.mkdir(index_dir)
+    os.mkdir(WORD_DOC_MAP_FILE)
 
-t = time.time()
-for w in w_docs:
-    with open(os.path.join(index_dir, w), 'w') as f:
-        for item in w_docs[w]:
-            f.write("%s\n" % item)
+    # write word -> documents to files
+    t = time.time()
+    for w in w_docs:
+        with open(word_doc_id_file(w), 'w') as f:
+            for item in w_docs[w]:
+                f.write("%s\n" % item)
 
-with open('doc_id_to_path.csv', 'w') as f:
-    for id, path in doc_id_to_path.items():
-        f.write("{},{}\n".format(id, path))
+    # write id -> doc path map to file
+    with open(ID_2_DOC_PATH_FILE, 'w') as f:
+        for id, path in doc_id_to_path.items():
+            f.write("{},{}\n".format(id, path))
+    print(time.time() - t)
 
-t = time.time()
-pickle.dump(trie, open( "trie.p", "wb" ))
-print(time.time() - t)
+    t = time.time()
+    pickle.dump(trie, open(TRIE_FILE, "wb"))
+    print(time.time() - t)
