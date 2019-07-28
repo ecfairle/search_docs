@@ -7,9 +7,9 @@ import pickle
 
 import pygtrie
 
-TRIE_FILE = 'trie.p'
-ID_2_DOC_PATH_FILE = 'doc_id_to_path.csv'
-WORD_DOC_MAP_FILE = 'w_docs'
+TRIE_FILE = 'data/trie.p'
+ID_2_DOC_PATH_FILE = 'data/doc_id_to_path.csv'
+WORD_DOC_MAP_FILE = 'data/w_docs'
 
 def word_doc_id_file(word):
     return os.path.join(WORD_DOC_MAP_FILE, word)

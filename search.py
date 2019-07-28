@@ -15,21 +15,22 @@ with open(ID_2_DOC_PATH_FILE, 'r') as f:
     lines = f.read().splitlines()
     id_2_doc_path = {l.split(',')[0]: l.split(',')[1] for l in lines}
 
-print (id_2_doc_path)
 trie = pickle.load(open(TRIE_FILE, "rb"))
 
 t = time.time()
 # get doc indexes that prefix shows up in
 indexes = set()
-for key in trie.keys(prefix):
+matching_words = list(trie.keys(prefix))
+for key in matching_words:
     with open(word_doc_id_file(key), 'r') as f:
         indexes |= set(f.read().splitlines())
 
-print(indexes)
 doc_paths = [id_2_doc_path[i] for i in indexes]
+print("Found at documents containing words {}".format(matching_words))
+print("Found {} documents matching the query".format(len(doc_paths)))
 for p in doc_paths:
     with open(p, 'r') as f:
-        print(f.read())
+        print("Example matching document {}".format(f.read()))
         break
 
 print("Actual processing:", time.time() - t)
